@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Carbon\Carbon;
 use App\Models\Admin\Role;
+use App\Models\Admin\Blog;
 use App\Models\Admin\Permission;
 use App\Models\Admin\LogActivity;
 use Illuminate\Support\Facades\Hash;

@@ -22,16 +22,10 @@ class ProfileApiController extends Controller
      */
     public function index(): JsonResponse
 {
-    $user = User::find(Auth::user()->id);
+    $user = User::with("blogs")->where('id', Auth::user()->id)->first();
 
-    if (auth()->user()->hasRole('Admin')) {
+    if (Auth::check()) {
         return response()->json([
-            'role' => 'Admin',
-            'user' => $user,
-        ], 200);
-    } else {
-        return response()->json([
-            'role' => 'User',
             'user' => $user,
         ], 200);
     }
