@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('method')->nullable();
             $table->string('ip')->nullable();
             $table->text('agent')->nullable();
-            $table->text('user_id')->nullable();
+            $table->text('user_id');
             $table->timestamps();
         });
     }

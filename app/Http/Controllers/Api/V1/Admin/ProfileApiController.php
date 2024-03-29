@@ -21,15 +21,15 @@ class ProfileApiController extends Controller
      * Display a listing of the resource.
      */
     public function index(): JsonResponse
-{
-    $user = User::with("blogs")->where('id', Auth::user()->id)->first();
+    {
+        $user = User::with("blogs")->where('id', Auth::user()->id)->first();
 
-    if (Auth::check()) {
-        return response()->json([
-            'user' => $user,
-        ], 200);
+        if (Auth::check()) {
+            return response()->json([
+                'user' => $user,
+            ], 200);
+        }
     }
-}
 
     // public function index()
     // {
