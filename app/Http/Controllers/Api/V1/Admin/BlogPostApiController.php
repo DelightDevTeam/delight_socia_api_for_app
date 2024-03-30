@@ -32,7 +32,7 @@ class BlogPostApiController extends Controller
     $blogs = Blog::withCount(['likes', 'comments'])
         ->with(['medias','users', 'likes', 'comments', 'comments.users', 'likes.user'])
         ->latest()
-        ->paginate(9);
+        ->paginate(10);
         return response()->json([
             'blogs'=> $blogs
         ]);
