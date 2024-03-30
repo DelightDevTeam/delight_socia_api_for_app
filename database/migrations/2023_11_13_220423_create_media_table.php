@@ -15,6 +15,9 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('blog_id');
             $table->string('media')->nullable();
+            $table->smallInteger('type'); //1 = image, 2 = short_video, 3 = long_video
+            $table->string('encoded_url')->nullable();
+            $table->smallInteger('status')->default(1); //1 = raw, 2 = progress, 3 = fail, 4 = encoded
             $table->timestamps();
 
             $table->foreign('blog_id')->references('id')->on('blogs')->onDelete('cascade');

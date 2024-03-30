@@ -81,9 +81,21 @@ class BlogPostApiController extends Controller
                     $mediaName = uniqid('blogs') . '.' . $media->getClientOriginalExtension();
                     $media->move(public_path('assets/img/blogs/'), $mediaName);
 
+                    $ext = $media->getClientOriginalExtension();
+                    if($ext == "jpg" || $ext == "png" || $ext == "jpeg" || $ext == "gif" || $ext == "svg"){
+                        $type = 1;
+                    }else{
+                        $command = "ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 storage/app/$videoPath";
+                        $duration = shell_exec($command);
+                        $durationInSeconds = (float) $duration;
+                        $threshold = 300; // 5 minutes (adjust according to your criteria)
+                        $type = ($durationInSeconds <= $threshold) ? 2 : 3;
+                    }
+
                     // Create media and associate it with the blog
                     $blog->medias()->create([
                         'media' => $mediaName,
+                        'type' => $type,
                     ]);
                 }
             }
@@ -178,9 +190,22 @@ class BlogPostApiController extends Controller
                     $mediaName = uniqid('blogs') . '.' . $media->getClientOriginalExtension();
                     $media->move(public_path('assets/img/blogs/'), $mediaName);
 
+                    $ext = $media->getClientOriginalExtension();
+
+                    if($ext == "jpg" || $ext == "png" || $ext == "jpeg" || $ext == "gif" || $ext == "svg"){
+                        $type = 1;
+                    }else{
+                        $command = "ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 storage/app/$videoPath";
+                        $duration = shell_exec($command);
+                        $durationInSeconds = (float) $duration;
+                        $threshold = 300; // 5 minutes (adjust according to your criteria)
+                        $type = ($durationInSeconds <= $threshold) ? 2 : 3;
+                    }
+
                     // create media and associate it with the blog
                     $blog->medias()->create([
                         'media' => $mediaName,
+                        'type' => $type,
                     ]);
                 }
                 return response()->json([
@@ -214,9 +239,23 @@ class BlogPostApiController extends Controller
 
             $mediaName = uniqid('blogs') . '.' . $newMedia->getClientOriginalExtension();
             $newMedia->move(public_path('assets/img/blogs/'), $mediaName);
+            
+            $ext = $newMedia->getClientOriginalExtension();
+
+            if($ext == "jpg" || $ext == "png" || $ext == "jpeg" || $ext == "gif" || $ext == "svg"){
+                $type = 1;
+            }else{
+                $command = "ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 storage/app/$videoPath";
+                $duration = shell_exec($command);
+                $durationInSeconds = (float) $duration;
+                $threshold = 300; // 5 minutes (adjust according to your criteria)
+                $type = ($durationInSeconds <= $threshold) ? 2 : 3;
+            }
 
             $media->update([
                 'media' => $mediaName,
+                'type' => $type,
+                'encoded_url' => ""
             ]);
             return response()->json([
                 'message'=> 'true',
@@ -259,63 +298,7 @@ class BlogPostApiController extends Controller
             'message' => 'true',
             'status' => 'Blog Deleted Successfully.'
         ],200);
-
-        // return response(null, Response::HTTP_NO_CONTENT);
     }
-
-
-
-    // public function store(BlogRequest $request)
-    // {
-    //     // Get the validated data from the request
-    //     $data = $request->validated();
-
-    //     // Add user_id to the data (if needed)
-    //     $data['user_id'] = Auth::user()->id;
-
-    //     // Check if an image has been uploaded
-    //     $image = $request->file('image');
-
-    //     if ($image) {
-    //         $mainFolder = 'blog_images/' . Str::random(); // Modify the folder structure as needed
-    //         $filename = $image->getClientOriginalName();
-
-    //         // Store the new image with specified visibility settings
-    //         $path = Storage::putFileAs(
-    //             'public/' . $mainFolder,
-    //             $image,
-    //             $filename,
-    //             [
-    //                 'visibility' => 'public',
-    //                 'directory_visibility' => 'public',
-    //             ]
-    //         );
-
-    //         $data['image'] = URL::to(Storage::url($path));
-    //         $data['image_mime'] = $image->getClientMimeType();
-    //         $data['image_size'] = $image->getSize();
-    //     }
-
-    //     // Create a new blog entry with the provided data
-    //     $blog = Blog::create($data);
-
-    //     // Return a JSON response indicating success and the created resource
-    //     return response()->json(['message' => 'Blog Created', 'data' => $blog], 200);
-    // }
-
-
-
-
-    // public function show(Blog $blogPost)
-    // {
-    //     abort_if(Gate::denies('blog_post_show'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-
-
-    //     return new BlogPostResource($blogPost->load(['users']));
-    // }
-
-
-
 
     public function update(Request $request, $id)
     {
@@ -372,15 +355,6 @@ class BlogPostApiController extends Controller
             return response()->json(['error' => 'An error occurred during the update.'], 500);
         }
     }
-
-    // public function destroy(Blog $blogPost)
-    // {
-    //     abort_if(Gate::denies('blog_post_delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-
-    //     $blogPost->delete();
-
-    //     return response(null, Response::HTTP_NO_CONTENT);
-    // }
 
     public function saveImage(UploadedFile $image)
     {
