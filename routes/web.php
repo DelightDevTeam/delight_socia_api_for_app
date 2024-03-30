@@ -24,6 +24,7 @@ Route::get('/login', [HomeController::class, 'login'])->name('login');
 Route::get('/register', [HomeController::class, 'register'])->name('register');
 Route::get('/blog-detail/{id}', [HomeController::class, 'blogDetail']);
 Route::post('/search', [HomeController::class, 'search']);
+Route::get('/privacy', [HomeController::class, 'privacy'])->name('privacy');
 
 //push notification by firebase
 Route::post('/save-token', [BlogController::class, 'saveToken'])->name('save-token');
