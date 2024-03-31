@@ -96,6 +96,7 @@ class BlogPostApiController extends Controller
                     Media::create([
                         'media' => $mediaName,
                         'type' => $type,
+                        'blog_id' => $blog->id,
                     ]);
                 }
             }
