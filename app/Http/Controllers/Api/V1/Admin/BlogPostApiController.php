@@ -93,7 +93,7 @@ class BlogPostApiController extends Controller
                     }
 
                     // Create media and associate it with the blog
-                    $blog->medias()->create([
+                    Media::create([
                         'media' => $mediaName,
                         'type' => $type,
                     ]);
@@ -203,7 +203,7 @@ class BlogPostApiController extends Controller
                     }
 
                     // create media and associate it with the blog
-                    $blog->medias()->create([
+                    Media::create([
                         'media' => $mediaName,
                         'type' => $type,
                     ]);
