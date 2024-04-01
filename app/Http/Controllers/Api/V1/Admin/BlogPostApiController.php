@@ -20,6 +20,7 @@ use App\Http\Requests\UpdateBlogPostRequest;
 use App\Http\Resources\Admin\BlogPostResource;
 use Symfony\Component\HttpFoundation\Response;
 use App\Http\Controllers\Traits\MediaUploadingTrait;
+use App\Services\VideoService;
 use Illuminate\Support\Facades\Storage; // Import the Storage facade
 
 class BlogPostApiController extends Controller
@@ -85,6 +86,7 @@ class BlogPostApiController extends Controller
                     if($ext == "jpg" || $ext == "png" || $ext == "jpeg" || $ext == "gif" || $ext == "svg"){
                         $type = 1;
                     }else{
+                        $length = VideoService::getLengthInSecond("assets/img/blogs/");
                         $command = "ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 storage/app/$videoPath";
                         $duration = shell_exec($command);
                         $durationInSeconds = (float) $duration;
