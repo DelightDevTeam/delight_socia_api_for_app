@@ -76,7 +76,6 @@ class BlogPostApiController extends Controller
             ]);
     
             // Handle media if present in the request
-            if ($request->hasFile('medias')) {
                 foreach ($request->file('medias') as $media) {
                     $ext = $media->getClientOriginalExtension();
                     $mediaName = uniqid('blogs_') . '.' . $ext; // Generate unique filename
@@ -89,7 +88,6 @@ class BlogPostApiController extends Controller
                         'blog_id' => $blog->id,
                     ]);
                 }
-            }
             
             // Eager load relationships for the created blog
             $blogPost = Blog::with(['medias', 'users'])->where('id', $blog->id)->first();
