@@ -10,12 +10,15 @@ use App\Http\Controllers\Api\V1\Admin\BannerApiController;
 use App\Http\Controllers\Api\V1\Admin\ProfileApiController;
 use App\Http\Controllers\Api\V1\Admin\BlogPostApiController;
 use App\Http\Controllers\Api\V1\Admin\PermissionsApiController;
+use App\Http\Controllers\Api\V1\TestController;
 use App\Http\Controllers\Api\V1\User\NoAuth\UserBlogPostApiController;
 
 
 Route::post('/auth/register', [AuthApiController::class, 'createUser']);
 Route::post('/auth/login', [AuthApiController::class, 'loginUser']);
 Route::get('/blog-detail/{id}', [HomeApiController::class, 'blogDetail']);
+
+Route::post("/v1/test", [TestController::class, "index"]);
 
 
 Route::middleware(['auth:sanctum'])->group(function () {

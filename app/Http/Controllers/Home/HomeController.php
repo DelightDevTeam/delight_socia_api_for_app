@@ -23,6 +23,11 @@ class HomeController extends Controller
 
         return view('welcome', compact('blogs'));
     }
+    public function privacy()
+    {
+        return view('privacy');
+    }
+    
     public function search(Request $request){
         if(!$request->search){
             return redirect()->back();
@@ -58,52 +63,30 @@ class HomeController extends Controller
         return view('blog-detail', compact('blog', 'comments'));
     }
     public function comment(Request $request, $id)
-{
-    $blog = Blog::find($id);
+    {
+        $blog = Blog::find($id);
 
-    if (!$blog) {
-        return redirect()->back()->with('error', "Blog Not Found!");
-    }
+        if (!$blog) {
+            return redirect()->back()->with('error', "Blog Not Found!");
+        }
 
-    $request->validate([
-        'comment' => 'required'
-    ]);
-
-    // Check if there is an authenticated user
-    if (Auth::check()) {
-        Comment::create([
-            'blog_id' => $id,
-            'user_id' => Auth::user()->id,
-            'comment' => $request->comment
+        $request->validate([
+            'comment' => 'required'
         ]);
 
-        return redirect()->back()->with('success', "Comment Created.");
-    } else {
-        return redirect()->route('home')->with('error', 'You must be logged in to leave a comment.');
+        // Check if there is an authenticated user
+        if (Auth::check()) {
+            Comment::create([
+                'blog_id' => $id,
+                'user_id' => Auth::user()->id,
+                'comment' => $request->comment
+            ]);
+
+            return redirect()->back()->with('success', "Comment Created.");
+        } else {
+            return redirect()->route('home')->with('error', 'You must be logged in to leave a comment.');
+        }
     }
-}
-
-
-
-    //comment section
-    // public function comment(Request $request, $id){
-    //     $blog = Blog::find($id);
-    //     if(!$blog){
-    //         return redirect()->back()->with('error', "Blog Not Found!");
-    //     }
-    //     $request->validate([
-    //         'comment' => 'required'
-    //     ]);
-
-    //     Comment::create([
-    //         'blog_id' => $id,
-    //         'user_id' => Auth::user()->id,
-    //         'comment' => $request->comment
-    //     ]);
-    //     return redirect()->back()->with('success', "Comment Created.");
-    // }
-
-
 
     public function commentEdit(Request $request){
         $request->validate([

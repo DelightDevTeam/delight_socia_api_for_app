@@ -2,34 +2,44 @@
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
-use App\Models\User;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\UploadedFile;
-use App\Http\Requests\UserRequest;
-use Illuminate\Support\Facades\URL;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UserRequest;
+use App\Models\Admin\Blog;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+
 class ProfileApiController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index(): JsonResponse
-{
-    $user = User::with("blogs")->where('id', Auth::user()->id)->first();
+    {
+        $id = Auth::user()->id;
+        $user = User::find($id);
+        $blogs = Blog::withCount(['likes', 'comments'])
+        ->with(['medias','users', 'likes', 'comments', 'comments.users', 'likes.user'])
+        ->where('user_id', $id)
+        ->latest()
+        ->paginate(10);
 
-    if (Auth::check()) {
-        return response()->json([
-            'user' => $user,
-        ], 200);
+        if (Auth::check()) {
+            return response()->json([
+                'user' => $user,
+                'blogs' => $blogs
+            ], 200);
+        }
     }
-}
 
     // public function index()
     // {
@@ -59,10 +69,21 @@ class ProfileApiController extends Controller
 
     /**
      * Display the specified resource.
-     */
+     */    
     public function show(string $id)
     {
-        //
+        $user = User::find($id);
+        $blogs = Blog::withCount(['likes', 'comments'])
+        ->with(['medias','users', 'likes', 'comments', 'comments.users', 'likes.user'])
+        ->where('user_id', $id)
+        ->latest()
+        ->paginate(10);
+
+        return response()->json([
+            'status' => "success",
+            'user' => $user,
+            'blogs' => $blogs
+        ], 200);
     }
 
     /**

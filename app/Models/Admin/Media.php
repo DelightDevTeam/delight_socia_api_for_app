@@ -9,7 +9,7 @@ class Media extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'blog_id', 'media'
+        'blog_id', 'media', 'type', 'status', 'encoded_url'
     ];
     protected $appends = ['media_url'];
 

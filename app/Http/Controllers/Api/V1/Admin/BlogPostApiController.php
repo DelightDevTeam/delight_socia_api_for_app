@@ -20,6 +20,7 @@ use App\Http\Requests\UpdateBlogPostRequest;
 use App\Http\Resources\Admin\BlogPostResource;
 use Symfony\Component\HttpFoundation\Response;
 use App\Http\Controllers\Traits\MediaUploadingTrait;
+use App\Services\VideoService;
 use Illuminate\Support\Facades\Storage; // Import the Storage facade
 
 class BlogPostApiController extends Controller
@@ -32,7 +33,7 @@ class BlogPostApiController extends Controller
     $blogs = Blog::withCount(['likes', 'comments'])
         ->with(['medias','users', 'likes', 'comments', 'comments.users', 'likes.user'])
         ->latest()
-        ->paginate(9);
+        ->paginate(10);
         return response()->json([
             'blogs'=> $blogs
         ]);
@@ -53,7 +54,12 @@ class BlogPostApiController extends Controller
 
     public function store(Request $request)
     {
-        if(!$request->description){
+        $validatedData = $request->validate([
+            'description' => 'required|string',
+            'medias.*' => 'nullable', // Example validation for media files
+        ]);
+    
+        if(!$validatedData['description']){
             return response()->json([
                 'message' => 'false',
                 'errors' => [
@@ -61,43 +67,36 @@ class BlogPostApiController extends Controller
                 ]
             ], 400);
         }
-        // Validate the incoming request
-        $validatedData = $request->validate([
-            'description' => 'required|string',
-            'medias.*' => 'nullable', // Example validation for media files
-        ]);
-
-
+    
         try {
             // Create the blog
             $blog = Blog::create([
                 'description' => $validatedData['description'],
                 'user_id' => Auth::id(),
             ]);
-
+    
             // Handle media if present in the request
-            if ($request->hasFile('medias')) {
                 foreach ($request->file('medias') as $media) {
-                    $mediaName = uniqid('blogs') . '.' . $media->getClientOriginalExtension();
-                    $media->move(public_path('assets/img/blogs/'), $mediaName);
-
-                    // Create media and associate it with the blog
-                    $blog->medias()->create([
+                    $ext = $media->getClientOriginalExtension();
+                    $mediaName = uniqid('blogs_') . '.' . $ext; // Generate unique filename
+                    $file_path = $media->storeAs("assets/img/blogs", $mediaName, 'upload');
+                    $type = in_array(strtolower($ext), ['jpg', 'png', 'jpeg', 'gif', 'svg']) ? 1 : (VideoService::getPlaytimeSeconds($file_path) < 300 ? 2 : 3);
+    
+                    Media::create([
                         'media' => $mediaName,
+                        'type' => $type,
+                        'blog_id' => $blog->id,
                     ]);
                 }
-            }
-            $blogDesc = Str::limit($blog->description, 100, '...');
-
+            
             // Eager load relationships for the created blog
             $blogPost = Blog::with(['medias', 'users'])->where('id', $blog->id)->first();
-
-            // $firebaseToken = User::whereNotNull('device_token')->pluck('device_token')->all();
-            $firebaseToken = User::all();
-            // return $firebaseToken;
-
+    
+            // Notify users about the new post
+            $blogDesc = Str::limit($blog->description, 100, '...');
+            $firebaseToken = User::whereNotNull('device_token')->pluck('device_token')->all();
             $SERVER_API_KEY = 'AAAAa3dnNbk:APA91bH6EBUEkFQwNc07ULndELZyQEFrouyDnAlJ0IGuMDEmcVJoUl_g9pHnuoR-tBdYecQDPUwOQygndEcZpDix2qbN9Zo9gRbI5Z_PbyZE8yx9r8avT-9wJ7HnTn1k4-yNBvhWB3Sv';
-
+    
             $data = [
                 "registration_ids" => $firebaseToken,
                 "notification" => [
@@ -108,23 +107,23 @@ class BlogPostApiController extends Controller
                 ]
             ];
             $dataString = json_encode($data);
-
+    
             $headers = [
                 'Authorization: key=' . $SERVER_API_KEY,
                 'Content-Type: application/json',
             ];
-
+    
             $ch = curl_init();
-
+    
             curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
-
+    
             $response = curl_exec($ch);
-
+    
             return response()->json([
                 'message' => 'Blog ' . (isset($validatedData['medias']) ? 'with Media' : '') . ' Created Successfully',
                 'blog' => $blogPost,
@@ -137,6 +136,7 @@ class BlogPostApiController extends Controller
             ], 500);
         }
     }
+    
 
     public function showDetail($id)
     {
@@ -178,9 +178,22 @@ class BlogPostApiController extends Controller
                     $mediaName = uniqid('blogs') . '.' . $media->getClientOriginalExtension();
                     $media->move(public_path('assets/img/blogs/'), $mediaName);
 
+                    $ext = $media->getClientOriginalExtension();
+
+                    if($ext == "jpg" || $ext == "png" || $ext == "jpeg" || $ext == "gif" || $ext == "svg"){
+                        $type = 1;
+                    }else{
+                        $command = "ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 storage/app/$videoPath";
+                        $duration = shell_exec($command);
+                        $durationInSeconds = (float) $duration;
+                        $threshold = 300; // 5 minutes (adjust according to your criteria)
+                        $type = ($durationInSeconds <= $threshold) ? 2 : 3;
+                    }
+
                     // create media and associate it with the blog
-                    $blog->medias()->create([
+                    Media::create([
                         'media' => $mediaName,
+                        'type' => $type,
                     ]);
                 }
                 return response()->json([
@@ -214,9 +227,23 @@ class BlogPostApiController extends Controller
 
             $mediaName = uniqid('blogs') . '.' . $newMedia->getClientOriginalExtension();
             $newMedia->move(public_path('assets/img/blogs/'), $mediaName);
+            
+            $ext = $newMedia->getClientOriginalExtension();
+
+            if($ext == "jpg" || $ext == "png" || $ext == "jpeg" || $ext == "gif" || $ext == "svg"){
+                $type = 1;
+            }else{
+                $command = "ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 storage/app/$videoPath";
+                $duration = shell_exec($command);
+                $durationInSeconds = (float) $duration;
+                $threshold = 300; // 5 minutes (adjust according to your criteria)
+                $type = ($durationInSeconds <= $threshold) ? 2 : 3;
+            }
 
             $media->update([
                 'media' => $mediaName,
+                'type' => $type,
+                'encoded_url' => ""
             ]);
             return response()->json([
                 'message'=> 'true',
@@ -259,63 +286,7 @@ class BlogPostApiController extends Controller
             'message' => 'true',
             'status' => 'Blog Deleted Successfully.'
         ],200);
-
-        // return response(null, Response::HTTP_NO_CONTENT);
     }
-
-
-
-    // public function store(BlogRequest $request)
-    // {
-    //     // Get the validated data from the request
-    //     $data = $request->validated();
-
-    //     // Add user_id to the data (if needed)
-    //     $data['user_id'] = Auth::user()->id;
-
-    //     // Check if an image has been uploaded
-    //     $image = $request->file('image');
-
-    //     if ($image) {
-    //         $mainFolder = 'blog_images/' . Str::random(); // Modify the folder structure as needed
-    //         $filename = $image->getClientOriginalName();
-
-    //         // Store the new image with specified visibility settings
-    //         $path = Storage::putFileAs(
-    //             'public/' . $mainFolder,
-    //             $image,
-    //             $filename,
-    //             [
-    //                 'visibility' => 'public',
-    //                 'directory_visibility' => 'public',
-    //             ]
-    //         );
-
-    //         $data['image'] = URL::to(Storage::url($path));
-    //         $data['image_mime'] = $image->getClientMimeType();
-    //         $data['image_size'] = $image->getSize();
-    //     }
-
-    //     // Create a new blog entry with the provided data
-    //     $blog = Blog::create($data);
-
-    //     // Return a JSON response indicating success and the created resource
-    //     return response()->json(['message' => 'Blog Created', 'data' => $blog], 200);
-    // }
-
-
-
-
-    // public function show(Blog $blogPost)
-    // {
-    //     abort_if(Gate::denies('blog_post_show'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-
-
-    //     return new BlogPostResource($blogPost->load(['users']));
-    // }
-
-
-
 
     public function update(Request $request, $id)
     {
@@ -372,15 +343,6 @@ class BlogPostApiController extends Controller
             return response()->json(['error' => 'An error occurred during the update.'], 500);
         }
     }
-
-    // public function destroy(Blog $blogPost)
-    // {
-    //     abort_if(Gate::denies('blog_post_delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-
-    //     $blogPost->delete();
-
-    //     return response(null, Response::HTTP_NO_CONTENT);
-    // }
 
     public function saveImage(UploadedFile $image)
     {
