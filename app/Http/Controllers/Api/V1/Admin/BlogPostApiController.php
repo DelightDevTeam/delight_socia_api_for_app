@@ -81,9 +81,18 @@ class BlogPostApiController extends Controller
                     $mediaName = uniqid('blogs_') . '.' . $ext; // Generate unique filename
                     $file_path = $media->storeAs("assets/img/blogs", $mediaName, 'upload');
                     // $type = in_array(strtolower($ext), ['jpg', 'png', 'jpeg', 'gif', 'svg']) ? 1 : (VideoService::getPlaytimeSeconds($file_path) < 300 ? 2 : 3);
-                    $type = in_array(strtolower($ext), ['jpg', 'png', 'jpeg', 'gif', 'svg']) ? 1 : (VideoService::getVideoInfo($file_path)['playtimeSeconds'] < 300 ? 2 : 3);
+                   // Retrieve video information
+                    $videoInfo = VideoService::getVideoInfo($file_path);
 
-    
+                    if (isset($videoInfo['error'])) {
+                        // Handle the error
+                        return response()->json([
+                            'message' => 'Error creating the blog',
+                            'error' => $videoInfo['error'],
+                        ], 500);
+                    }
+                    // Determine media type based on playtime
+                    $type = in_array(strtolower($ext), ['jpg', 'png', 'jpeg', 'gif', 'svg']) ? 1 : ($videoInfo['playtimeSeconds'] < 300 ? 2 : 3);
                     Media::create([
                         'media' => $mediaName,
                         'type' => $type,
