@@ -374,7 +374,9 @@ class BlogPostApiController extends Controller
 
     public function shortVideos()
     {
-        $videos = Blog::where('type', 2)->latest()->paginate(5);
+        $videos = Blog::with(['likes', 'comments','users', 'medias' => function($query){
+            $query->where('type', 2);
+        }])->withCount(['likes', 'comments'])->latest()->paginate(5);
         return $this->success($videos);
     }
 }

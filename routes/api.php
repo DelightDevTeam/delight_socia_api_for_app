@@ -90,3 +90,5 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'App\Http\Co
     Route::post('banners/{banner}', [BannerApiController::class, 'update']);
     Route::post('/banners/statusChange/{id}', [BannerApiController::class, 'statusChange']);
 });
+
+
