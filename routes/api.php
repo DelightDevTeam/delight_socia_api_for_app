@@ -83,6 +83,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'App\Http\Co
     Route::post('blog-posts/update/{id}', [BlogPostApiController::class, 'updateBlog']);
     Route::post('blog-posts/media/update/{id}', [BlogPostApiController::class, 'updateMedia']);
     Route::post('blog-posts/media/delete/{id}', [BlogPostApiController::class, 'deleteMedia']);
+    Route::get('/short-videos', [BlogPostApiController::class, 'shortVideos']);
     //blog routes
 
     Route::apiResource('banners', BannerApiController::class);

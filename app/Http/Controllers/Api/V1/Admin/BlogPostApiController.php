@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
+use App\Traits\HttpResponses;
 use Log;
 use App\Models\User;
 use App\Models\Admin\Blog;
@@ -26,6 +27,7 @@ use Illuminate\Support\Facades\Storage; // Import the Storage facade
 class BlogPostApiController extends Controller
 {
     use MediaUploadingTrait;
+    use HttpResponses;
 
     public function index()
     {
@@ -368,5 +370,11 @@ class BlogPostApiController extends Controller
         }
 
         return $path . '/' . $image->getClientOriginalName();
+    }
+
+    public function shortVideos()
+    {
+        $videos = Blog::where('type', 2)->latest()->paginate(5);
+        return $this->success($videos);
     }
 }
