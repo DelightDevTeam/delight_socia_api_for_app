@@ -57,6 +57,10 @@ Route::get('/banners', [HomeApiController::class, 'banners']);
 
 //blog post
 Route::get('/blog-posts', [UserBlogPostApiController::class, 'index']);
+//update
+Route::post('blog-posts/update/{id}', [BlogPostApiController::class, 'updateBlog']);
+//delete
+Route::post('blog-posts/delete/{id}', [BlogPostApiController::class, 'deleteBlog']);
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'App\Http\Controllers\Api\V1\Admin', 'middleware' => ['auth:sanctum']], function () {
     // Permissions
@@ -80,7 +84,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'App\Http\Co
 
     //blog routes
     Route::get('blog-posts/show/{id}', [BlogPostApiController::class, 'showDetail']);
-    Route::post('blog-posts/update/{id}', [BlogPostApiController::class, 'updateBlog']);
+    
     Route::post('blog-posts/media/update/{id}', [BlogPostApiController::class, 'updateMedia']);
     Route::post('blog-posts/media/delete/{id}', [BlogPostApiController::class, 'deleteMedia']);
     

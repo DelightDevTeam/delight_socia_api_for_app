@@ -179,7 +179,7 @@ class BlogPostApiController extends Controller
         ]);
 
         try {
-            $blog = Blog::findOrFail($id);
+            $blog = Blog::with('medias')->findOrFail($id);
             $blog->update([
                 'description'=> $request->description,
             ]);
@@ -214,15 +214,17 @@ class BlogPostApiController extends Controller
                         'type' => $type,
                     ]);
                 }
-                return response()->json([
-                    'message' => 'true',
-                    'success' => 'Blog Updated Successfully'
-                ],200);
+                return $this->success($blog,  "Blog Updated Successfully");
+                // return response()->json([
+                //     'message' => 'true',
+                //     'success' => 'Blog Updated Successfully'
+                // ],200);
             }
-            return response()->json([
-                'message' => 'true',
-                'success' => 'Blog Updated Successfully'
-            ],200);
+            return $this->success($blog,  "Blog Updated Successfully");
+            // return response()->json([
+            //     'message' => 'true',
+            //     'success' => 'Blog Updated Successfully'
+            // ],200);
 
         }catch (\Exception $e) {
             return response()->json([
@@ -383,5 +385,12 @@ class BlogPostApiController extends Controller
             $query->where('type', 2);
         })->withCount(['likes', 'comments'])->latest()->paginate(20);
         return $this->success($videos);
+    }
+
+    public function deleteBlog($id)
+    {
+        $blog = Blog::find($id);
+        $blog->delete();
+        return $this->success("", "Blog Deleted Successfully");
     }
 }
