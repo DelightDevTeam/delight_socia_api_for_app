@@ -21,6 +21,7 @@ use App\Http\Requests\UpdateBlogPostRequest;
 use App\Http\Resources\Admin\BlogPostResource;
 use Symfony\Component\HttpFoundation\Response;
 use App\Http\Controllers\Traits\MediaUploadingTrait;
+use App\Services\M3u8Convertor;
 use App\Services\VideoService;
 use Illuminate\Support\Facades\Storage; // Import the Storage facade
 
@@ -93,10 +94,14 @@ class BlogPostApiController extends Controller
                             'error' => $videoInfo['error'],
                         ], 500);
                     }
+
+                    $s3_url = app(M3u8Convertor::class)->convert($media);
+
                     // Determine media type based on playtime
                     $type = in_array(strtolower($ext), ['jpg', 'png', 'jpeg', 'gif', 'svg']) ? 1 : ($videoInfo['playtimeSeconds'] < 300 ? 2 : 3);
+
                     Media::create([
-                        'media' => $mediaName,
+                        'media' => $s3_url,
                         'type' => $type,
                         'blog_id' => $blog->id,
                     ]);

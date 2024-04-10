@@ -81,7 +81,7 @@ class M3u8Convertor
 
         $s3_m3u8_file_url = Storage::disk("s3")->url($s3_m3u8_file_path);
         
-        exec("rm -rf " . storage_path($this->generateVideoPath($folder_name)));
+        // exec("rm -rf " . storage_path($this->generateVideoPath($folder_name)));
 
         return $s3_m3u8_file_url;
     }
