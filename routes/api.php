@@ -39,7 +39,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/comment/edit/{id}', [HomeApiController::class, 'updateComment']);
     Route::delete('/comment/delete/', [HomeApiController::class, 'deleteComment']);
 
-
+    Route::apiResource('blog-posts', BlogPostApiController::class);
+    Route::get('/short-videos', [BlogPostApiController::class, 'shortVideos']);
 });
 // user
 Route::post('/search', [HomeApiController::class, 'search']);
@@ -78,14 +79,16 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'App\Http\Co
     Route::post('blog-posts/media', [BlogPostApiController::class, 'storeMedia'])->name('blog-posts.storeMedia');
 
     //blog routes
-    Route::apiResource('blog-posts', BlogPostApiController::class);
     Route::get('blog-posts/show/{id}', [BlogPostApiController::class, 'showDetail']);
     Route::post('blog-posts/update/{id}', [BlogPostApiController::class, 'updateBlog']);
     Route::post('blog-posts/media/update/{id}', [BlogPostApiController::class, 'updateMedia']);
     Route::post('blog-posts/media/delete/{id}', [BlogPostApiController::class, 'deleteMedia']);
+    
     //blog routes
 
     Route::apiResource('banners', BannerApiController::class);
     Route::post('banners/{banner}', [BannerApiController::class, 'update']);
     Route::post('/banners/statusChange/{id}', [BannerApiController::class, 'statusChange']);
 });
+
+
