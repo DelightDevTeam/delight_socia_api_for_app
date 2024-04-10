@@ -18,7 +18,7 @@ Route::post('/auth/register', [AuthApiController::class, 'createUser']);
 Route::post('/auth/login', [AuthApiController::class, 'loginUser']);
 Route::get('/blog-detail/{id}', [HomeApiController::class, 'blogDetail']);
 
-Route::post("/v1/test", [TestController::class, "index"]);
+Route::any("/v1/test", [TestController::class, "index"]);
 
 
 Route::middleware(['auth:sanctum'])->group(function () {

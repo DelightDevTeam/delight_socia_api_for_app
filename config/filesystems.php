@@ -36,30 +36,36 @@ return [
             'throw' => false,
         ],
 
+        'tmp_upload' => [
+            'driver' => 'local',
+            'root' => storage_path(),
+            'throw' => true,
+        ],
+
         'upload' => [
             'driver' => 'local',
             'root' => public_path('/'),
-            'url' => env('APP_URL').'/storage',
+            'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
             'throw' => false,
         ],
-        
+
         'public' => [
-                'driver' => 'local',
-                'root' => storage_path('app/public'),
-                'url' => env('APP_URL').'/storage',
-                'visibility' => 'public',
-                'permissions' => [
-                    'file' => [
-                        'public' => 0644,
-                        'private' => 0600,
-                    ],
-                    'dir' => [
-                        'public' => 0755,
-                        'private' => 0700,
-                    ],
+            'driver' => 'local',
+            'root' => storage_path('app/public'),
+            'url' => env('APP_URL') . '/storage',
+            'visibility' => 'public',
+            'permissions' => [
+                'file' => [
+                    'public' => 0644,
+                    'private' => 0600,
+                ],
+                'dir' => [
+                    'public' => 0755,
+                    'private' => 0700,
                 ],
             ],
+        ],
 
 
         's3' => [
@@ -71,7 +77,7 @@ return [
             'url' => env('AWS_URL'),
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
-            'throw' => false,
+            'throw' => true,
         ],
 
     ],
