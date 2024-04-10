@@ -95,13 +95,13 @@ class BlogPostApiController extends Controller
                         ], 500);
                     }
 
-                    $s3_url = app(M3u8Convertor::class)->convert($media);
+                    // $s3_url = app(M3u8Convertor::class)->convert($media);
 
                     // Determine media type based on playtime
                     $type = in_array(strtolower($ext), ['jpg', 'png', 'jpeg', 'gif', 'svg']) ? 1 : ($videoInfo['playtimeSeconds'] < 300 ? 2 : 3);
 
                     Media::create([
-                        'media' => $s3_url,
+                        'media' => $mediaName,
                         'type' => $type,
                         'blog_id' => $blog->id,
                     ]);
