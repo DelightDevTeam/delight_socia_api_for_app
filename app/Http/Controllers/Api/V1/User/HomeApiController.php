@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\User\LikeResponse;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\User\BlogHomeResource;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 
 
@@ -45,8 +46,20 @@ class HomeApiController extends Controller
 
         foreach ($blogs as $blog) {
             $blog->desc = Str::limit($blog->description, 250, '...');
+            $blog->posted_date = $blog->created_at->format('M j, Y');
+            $blog->last_time = $this->calculateTimeDuration($blog->created_at);
         }
         return response()->json($blogs);
+    }
+    private function calculateTimeDuration($created_at)
+    {
+        $now = Carbon::now();
+        $postedTime = Carbon::createFromFormat('Y-m-d H:i:s', $created_at);
+
+        // Calculate time difference
+        $diff = $postedTime->diffForHumans($now);
+
+        return $diff;
     }
 
     public function banners(){
