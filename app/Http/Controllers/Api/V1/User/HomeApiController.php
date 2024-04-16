@@ -21,7 +21,7 @@ use Illuminate\Http\JsonResponse;
 
 class HomeApiController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
     $blogs = Blog::withCount(['likes', 'comments'])
         ->with(['medias', 'users', 'likes', 'comments', 'comments.users', 'likes.user'])
@@ -33,19 +33,20 @@ class HomeApiController extends Controller
     }
     return response()->json([
         'data' => $blogs
-        ]);
+    ]);
     }
 
     public function home()
     {
-    $blogs = Blog::withCount(['likes', 'comments'])->with(['users', 'likes'])
+        $blogs = Blog::withCount(['likes', 'comments'])
+        ->with(['medias', 'users', 'likes', 'comments', 'comments.users', 'likes.user'])
         ->latest()
         ->paginate(9);
 
-    foreach ($blogs as $blog) {
-        $blog->desc = Str::limit($blog->description, 250, '...');
-    }
-    return response()->json($blogs);
+        foreach ($blogs as $blog) {
+            $blog->desc = Str::limit($blog->description, 250, '...');
+        }
+        return response()->json($blogs);
     }
 
     public function banners(){
