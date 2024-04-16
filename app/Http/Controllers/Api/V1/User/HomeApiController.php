@@ -59,8 +59,12 @@ class HomeApiController extends Controller
         // Calculate time difference
         $diff = $postedTime->diffForHumans($now);
 
+        // Replace "before" with "ago"
+        $diff = str_replace('before', 'ago', $diff);
+
         return $diff;
     }
+
 
     public function banners(){
         $banners = Banner::latest()->first();
